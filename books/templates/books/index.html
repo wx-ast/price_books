@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <ul>
+        {% for item in items %}
+            <li>{{ item.order.name }}: {{ item.count_all }}
+                <ul>
+                    {% for a, b in item.count.items %}
+                        <li><strong>{{ a }})</strong> <a href="{% url 'get_csv' order_id=item.order.pk status=a %}">{{ b }}</a> - <a href="{% url 'get_csv_file' order_id=item.order.pk status=a %}">get csv</a> - <a href="{% url 'get_xls_file' order_id=item.order.pk status=a %}" target="_blank">get xls</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div>
+        <strong>0)</strong> совпадение не найдено<br>
+        <strong>1)</strong> название, автор, переплет<br>
+        <strong>2)</strong> название, автор<br>
+        <strong>3)</strong> название<br>
+    </div>
+{% endblock %}

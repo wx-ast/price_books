@@ -1,0 +1,29 @@
+<!doctype html>
+<html class="no-js not-touch" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/main.css" type="text/css" />
+    {% block header %}{% endblock header %}
+</head>
+<body class="nojs">
+
+<div class="menu">
+    <div class="item"><a href="{% url 'index' %}">index</a></div>
+    <div class="item"><a href="{% url 'price_load_view' %}">price</a></div>
+    <div class="item"><a href="{% url 'order_load_view' %}">order</a></div>
+    <div class="item"><a href="{% url 'admin:index' %}" target="_blank">admin</a></div>
+</div>
+<div class="content">
+{% block body %}
+	{% block content %}{% endblock %}
+{% endblock %}
+</div>
+
+<script type="text/javascript" src="{{ STATIC_URL }}js/main.js"></script>
+{% block jsend %}{% endblock jsend %}
+</body>
+</html>

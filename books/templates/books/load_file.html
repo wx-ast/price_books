@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Загрузка</h1>
+    {% if error %}
+        <p class="error">Ошибка импорта</p>
+        {% if error_text %}
+            <p class="error error_text">{{ error_text }}</p>
+        {% endif %}
+    {% else %}
+        {% if error_text %}
+            <p class="error">{{ error_text }}</p>
+        {% endif %}
+    {% endif %}
+
+    {% if message %}
+        <p class="message">{{ message }}</p>
+    {% else %}
+        {% if form %}
+            {{ form.media }}
+            <form method="post" class="form" enctype="multipart/form-data">{% csrf_token %}
+                {{ form.as_p }}
+                <div class="controls">
+                    <input type="submit" class="button" value="Отправить" />
+                </div>
+            </form>
+        {% endif %}
+    {% endif %}
+{% endblock %}
