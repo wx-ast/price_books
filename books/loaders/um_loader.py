@@ -40,7 +40,8 @@ class Loader:
         name = name.strip()
 
         if isinstance(row[8], str):
-            price = round(float(row[8].replace(',', '.')) * self.price_multiplier, 2)
+            price = round(float(
+                row[8].replace(',', '.')) * self.price_multiplier, 2)
         else:
             price = round(float(row[8]) * self.price_multiplier, 2)
 
