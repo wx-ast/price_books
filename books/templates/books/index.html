@@ -3,7 +3,7 @@
 {% block content %}
     <ul>
         {% for item in items %}
-            <li>{{ item.order.name }}: {{ item.count_all }}
+            <li>{{ item.order.name }}: {{ item.count_all }} <a href="{% url 'order_update' order_id=item.order.pk %}">update</a>
                 <ul>
                     {% for a, b in item.count.items %}
                         <li><strong>{{ a }})</strong> <a href="{% url 'get_csv' order_id=item.order.pk status=a %}">{{ b }}</a> - <a href="{% url 'get_csv_file' order_id=item.order.pk status=a %}">get csv</a> - <a href="{% url 'get_xls_file' order_id=item.order.pk status=a %}" target="_blank">get xls</a></li>

@@ -27,8 +27,8 @@ class Supplier(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField('Название', max_length=127)
-    author = models.CharField('Автор', max_length=63, null=True, blank=True)
+    name = models.CharField('Название', max_length=255)
+    author = models.CharField('Автор', max_length=255, null=True, blank=True)
     binding = models.CharField('Переплет', max_length=31, null=True,
                                blank=True)
     article = models.CharField('Артикул', max_length=127)
@@ -69,8 +69,8 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, verbose_name='Заказ',
                               on_delete=models.CASCADE)
-    name = models.CharField('Название', max_length=127)
-    author = models.CharField('Автор', max_length=63)
+    name = models.CharField('Название', max_length=255)
+    author = models.CharField('Автор', max_length=255)
     binding = models.CharField('Переплет', max_length=31, null=True,
                                blank=True)
     quantity = models.IntegerField('Количество', null=True, blank=True)

@@ -18,6 +18,7 @@ from django.conf import settings
 
 from .forms import PriceForm, OrderForm
 from .models import Product, Supplier, Order, OrderItem
+from .utils import process_order_item
 
 
 class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
@@ -186,61 +187,17 @@ class OrderLoadView(FileUploadBaseView):
             print(row)
             return True
 
-        name_search = ''.join(re.findall("[a-z0-9а-яё]+",
-                                         data['name'].lower()))
-        author_search = ''.join(re.findall("[a-z0-9а-яё]+",
-                                           data['author'].lower()))
-        binding_search = ''.join(re.findall("[a-z0-9а-яё]+",
-                                            data['binding'].lower()))
-
-        bindings = {
-            'твердый': ['7', '7бц', '7б', 'дпружинатвердый', 'переплет',
-                        '7бцел', '7бс', 'п', 'тв', 'полутв'],
-            'мягкий': ['3', 'дпружинамягкий', 'обложка', 'облц', 'обл',
-                       'о', 'мяг'],
-            'картон': ['картон', '5'],
-            'интегральный': ['7инт', 'интегральныйпереплетуфлак', '10',
-                             'интегр']
-        }
-        # автоимп
-
-        if len(name_search) > 0:
-            products = Product.objects.filter(name_search=name_search)
-            if len(products) > 0:
-                if len(author_search) > 0:
-                    if binding_search in bindings and len(binding_search) > 0:
-                        products2 = products.filter(
-                            author_search=author_search,
-                            binding_search__in=bindings[binding_search]
-                        )
-                        if len(products2) > 0:
-                            item = OrderItem(
-                                order=self.order,
-                                product=products2[0],
-                                status=1,
-                                count=len(products2),
-                                **data
-                            )
-                            item.save()
-                            return True
-
-                    products3 = products.filter(author_search=author_search)
-                    if len(products3) > 0:
-                        item = OrderItem(
-                            order=self.order,
-                            product=products3[0],
-                            status=2,
-                            count=len(products3),
-                            **data
-                        )
-                        item.save()
-                        return True
-                item = OrderItem(order=self.order, product=products[0],
-                                 status=3, count=len(products), **data)
-                item.save()
-                return True
-
-        item = OrderItem(order=self.order, **data)
+        ret, ret_data = process_order_item(data, self.order)
+        if ret:
+            item = OrderItem(
+                order=self.order,
+                product=ret_data['product'],
+                status=ret_data['status'],
+                count=ret_data['count'],
+                **data
+            )
+        else:
+            item = OrderItem(order=self.order, **data)
         item.save()
 
         # self.i += 1
@@ -359,3 +316,28 @@ def get_xls_file(request, order_id, status):
     response['Content-Disposition'] = \
         f'attachment; filename="order_{status}.xls"'
     return response
+
+
+def order_update(request, order_id):
+    order = Order.objects.get(pk=order_id)
+    items = OrderItem.objects.filter(order=order)
+    for item in items:
+        data = {
+            'name': item.name,
+            'author': item.author,
+            'binding': item.binding,
+            'publisher': item.publisher,
+            'quantity': item.quantity,
+        }
+        ret, ret_data = process_order_item(data, order)
+        if ret:
+            item.product = ret_data['product']
+            item.status = ret_data['status']
+            item.count = ret_data['count']
+        else:
+            item.product = None
+            item.status = 0
+            item.count = 0
+        item.save()
+
+    return render(request, 'books/index.html')
