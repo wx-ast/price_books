@@ -1,0 +1,14 @@
+kind: pipeline
+name: default
+
+steps:
+- name: test
+  image: python:3.8.2
+  commands:
+  - pip install poetry
+  - poetry install
+  - python3 manage.py test
+
+trigger:
+  branch:
+  - master
