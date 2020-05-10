@@ -16,6 +16,7 @@ from django.views.generic.base import ContextMixin, TemplateResponseMixin
 from django.http import HttpResponse
 from django.conf import settings
 from django.urls import reverse
+from django.contrib.admin.views.decorators import staff_member_required
 
 from .forms import PriceForm, OrderForm
 from .models import Product, Supplier, Order, OrderItem
@@ -174,6 +175,7 @@ class OrderLoadView(FileUploadBaseView):
         return self.loader.process_line(row)
 
 
+@staff_member_required
 @timed_wrapper('index')
 def index(request):
     home_service = TimedService('select')
@@ -201,6 +203,7 @@ def index(request):
         return render(request, 'books/index.html', context)
 
 
+@staff_member_required
 def order_table(request, order_id, status):
     items = OrderItem.objects.filter(order=order_id, status=status)
 
@@ -210,6 +213,7 @@ def order_table(request, order_id, status):
     return render(request, 'books/order_table.html', context)
 
 
+@staff_member_required
 def get_csv_file(request, order_id, status):
     items = OrderItem.objects.filter(order=order_id, status=status)
 
@@ -233,6 +237,7 @@ def get_csv_file(request, order_id, status):
     return response
 
 
+@staff_member_required
 def get_xls_file(request, order_id, status):
     items = OrderItem.objects.filter(order=order_id, status=status)
 
@@ -269,6 +274,7 @@ def get_xls_file(request, order_id, status):
     return response
 
 
+@staff_member_required
 def order_update(request, order_id):
     order = Order.objects.get(pk=order_id)
     items = OrderItem.objects.filter(order=order)
@@ -294,7 +300,8 @@ def order_update(request, order_id):
     return render(request, 'books/index.html')
 
 
+@staff_member_required
 def order_delete(request, order_id):
-    order = Order.objects.get(pk=order_id).delete()
+    Order.objects.get(pk=order_id).delete()
 
     return redirect(reverse('index'))
