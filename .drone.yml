@@ -7,6 +7,7 @@ steps:
     pull: if-not-exists
     image: registry.atyx.ru/price_books
     commands:
+      - sleep 15
       - python3 project/manage.py test project
 
   - name: publish
@@ -18,6 +19,17 @@ steps:
         from_secret: registry_username
       password:
         from_secret: registry_password
+
+services:
+- name: db
+  image: mariadb
+  ports:
+  - 3306
+  environment:
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    MYSQL_DATABASE: django
+    MYSQL_USER: django
+    MYSQL_PASSWORD: django
 
 image_pull_secrets:
   - dockerconfigjson
