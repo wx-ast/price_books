@@ -28,6 +28,15 @@ def process_order_item(data, order):
     # папка
     # резина
 
+    if len(data.get('article', '')) > 0:
+        products = Product.objects.filter(article=data.get('article', ''))
+        if len(products) > 0:
+            return True, {
+                'status': 4,
+                'product': products[0],
+                'count': len(products)
+            }
+
     if len(name_search) > 0:
         products = Product.objects.filter(name_search=name_search)
         if len(products) > 0:

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table class="order_table">
+        <tr>
+            <th>count</th>
+            <th>name</th>
+            <th>author</th>
+            <th>binding</th>
+            <th>publisher</th>
+            <th>quantity</th>
+            <th>p_article</th>
+            <th>p_author</th>
+            <th>p_publisher</th>
+            <th>p_binding</th>
+            <th>p_price</th>
+            <th>p_supplier</th>
+        </tr>
+        {% for item in items %}
+            <tr>
+                <td>{{ item.count }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.author }}</td>
+                <td>{{ item.binding }}</td>
+                <td>{{ item.publisher }}</td>
+                <td>{{ item.quantity }}</td>
+
+                <td>{{ item.product.article }}</td>
+                <td>{{ item.product.author }}</td>
+                <td>{{ item.product.publisher }}</td>
+                <td>{{ item.product.binding }}</td>
+                <td>{{ item.product.price }}</td>
+                <td>{{ item.product.supplier.name }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

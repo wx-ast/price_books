@@ -32,18 +32,18 @@ class Product(models.Model):
     author = models.CharField('Автор', max_length=255, null=True, blank=True)
     binding = models.CharField('Переплет', max_length=31, null=True,
                                blank=True)
-    article = models.CharField('Артикул', max_length=127)
+    article = models.CharField('Артикул', max_length=127, db_index=True)
     price = models.FloatField('Цена')
     publisher = models.CharField('Издатель', max_length=63, null=True,
                                  blank=True)
     supplier = models.ForeignKey(Supplier, verbose_name='Поставщик',
                                  on_delete=models.CASCADE)
     name_search = models.CharField('Название (поиск)', max_length=255,
-                                   null=True, blank=True)
+                                   null=True, blank=True, db_index=True)
     author_search = models.CharField('Автор (поиск)', max_length=255,
-                                     null=True, blank=True)
+                                     null=True, blank=True, db_index=True)
     binding_search = models.CharField('Переплет (поиск)', max_length=31,
-                                      null=True, blank=True)
+                                      null=True, blank=True, db_index=True)
 
     class Meta:
         verbose_name = 'Товар'
@@ -74,6 +74,9 @@ class OrderItem(models.Model):
     author = models.CharField('Автор', max_length=255)
     binding = models.CharField('Переплет', max_length=31, null=True,
                                blank=True)
+    article = models.CharField('Артикул', max_length=127, null=True,
+                               blank=True)
+
     quantity = models.IntegerField('Количество', null=True, blank=True)
     publisher = models.CharField('Издатель', max_length=63,
                                  null=True, blank=True)

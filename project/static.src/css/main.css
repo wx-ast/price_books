@@ -19,3 +19,18 @@ html {
         .menu .item a {
             padding: 0.5em;
         }
+
+.order_table th {
+    background: #999;
+    padding: 0px 5px;
+}
+.order_table td {
+    padding: 0px 5px;
+    margin: 0;
+}
+.order_table tr:nth-child(2n) td {
+    background: #eee;
+}
+.order_table tr:hover td {
+    background: #ebebfc;
+}

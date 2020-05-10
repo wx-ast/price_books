@@ -9,12 +9,13 @@ from openpyxl import load_workbook
 import xlwt
 from server_timing.middleware import timed_wrapper, TimedService, timed
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 from django.views.generic import View
 from django.views.generic.base import ContextMixin, TemplateResponseMixin
 from django.http import HttpResponse
 from django.conf import settings
+from django.urls import reverse
 
 from .forms import PriceForm, OrderForm
 from .models import Product, Supplier, Order, OrderItem
@@ -32,6 +33,9 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
         self.form = self.form_cls()
 
     def post(self, request):
+        post_service = TimedService('post')
+        post_service.start()
+
         if not request.FILES:
             data = {
                 'error': True,
@@ -95,7 +99,8 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
         #     if not self.process_line(row):
         #         break
 
-        if hasattr(self, 'loader') and self.loader is not None:
+        if hasattr(self.loader, 'bindings') and \
+                self.loader.bindings is not None:
             print(self.loader.bindings)
 
         # uploaded_file.close()
@@ -104,7 +109,9 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
         data = {
             'message': 'Загрузка завершена'
         }
-        return self.render_to_response(self.get_context_data(**data))
+        post_service.end()
+        with timed('render'):
+            return self.render_to_response(self.get_context_data(**data))
 
     def get(self, *args, **kwargs):
         data = {
@@ -122,7 +129,6 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
 
 
 class PriceLoadView(FileUploadBaseView):
-    loader = None
 
     def process_post_data(self, data):
         supplier = Supplier.objects.get(
@@ -146,68 +152,26 @@ class PriceLoadView(FileUploadBaseView):
 
 class OrderLoadView(FileUploadBaseView):
     form_cls = OrderForm
-    order = None
     i = 0
 
     def process_post_data(self, data):
-        self.order = Order(name=data['file'].name)
-        self.order.save()
+        order = Order(name=data['file'].name)
+        order.save()
+        order_loader = data.get('loader', 'df')
+
+        try:
+            loader_module = importlib.import_module(
+                f'.loaders.{order_loader}_order_loader',
+                package=__package__
+            )
+            self.loader = loader_module.OrderLoader(order)
+        except ModuleNotFoundError as e:
+            print(e)
+            return False
         return True
 
     def process_line(self, row):
-        row = [a for a in row if a != '' and a]
-        data = {'quantity': 0}
-
-        if len(row) == 5:
-            data['name'] = str(row[1]) if isinstance(row[1], int) else\
-                row[1].strip()
-            data['author'] = ''
-            data['binding'] = row[2].strip()
-            data['publisher'] = row[3].strip()
-            data['quantity'] = row[4]
-        elif len(row) > 5:
-            data['name'] = str(row[1]) if isinstance(row[1], int) else\
-                row[1].strip()
-            data['author'] = row[2].strip()
-            data['name'] = data['name'].replace(data['author'], '').strip()
-            data['binding'] = row[3].strip()
-            data['publisher'] = row[4].strip() if isinstance(row[4], str) else\
-                str(row[4])
-            data['quantity'] = row[5]
-
-        try:
-            if data.get('quantity') is not None:
-                data['quantity'] = int(data['quantity'])
-            else:
-                data['quantity'] = 0
-        except ValueError:
-            return True
-
-        if data['quantity'] <= 0:
-            print(row)
-            return True
-
-        ret, ret_data = process_order_item(data, self.order)
-        if ret:
-            item = OrderItem(
-                order=self.order,
-                product=ret_data['product'],
-                status=ret_data['status'],
-                count=ret_data['count'],
-                **data
-            )
-        else:
-            item = OrderItem(order=self.order, **data)
-        item.save()
-
-        # self.i += 1
-        # print(self.i, len(row), data)
-        # if 5 < len(row) > 6:
-        #     print(self.i, len(row), row)
-        # if self.i > 20:
-        #     return False
-
-        return True
+        return self.loader.process_line(row)
 
 
 @timed_wrapper('index')
@@ -237,26 +201,13 @@ def index(request):
         return render(request, 'books/index.html', context)
 
 
-def get_csv(request, order_id, status):
+def order_table(request, order_id, status):
     items = OrderItem.objects.filter(order=order_id, status=status)
 
-    csv_data = io.StringIO()
-    writer = csv.writer(csv_data, delimiter=';', quotechar='"')
-    for item in items:
-        row = [item.count, item.name, item.author, item.binding,
-               item.publisher, item.quantity]
-        if item.product:
-            row.append(item.product.article)
-            row.append(item.product.author)
-            row.append(item.product.publisher)
-            row.append(item.product.binding)
-            row.append(item.product.price)
-            row.append(item.product.supplier.name)
-        writer.writerow(row)
     context = {
-        'csv_data': csv_data.getvalue()
+        'items': items
     }
-    return render(request, 'books/csv.html', context)
+    return render(request, 'books/order_table.html', context)
 
 
 def get_csv_file(request, order_id, status):
@@ -341,3 +292,9 @@ def order_update(request, order_id):
         item.save()
 
     return render(request, 'books/index.html')
+
+
+def order_delete(request, order_id):
+    order = Order.objects.get(pk=order_id).delete()
+
+    return redirect(reverse('index'))

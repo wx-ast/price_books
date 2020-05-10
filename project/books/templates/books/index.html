@@ -3,10 +3,10 @@
 {% block content %}
     <ul>
         {% for item in items %}
-            <li>{{ item.order.name }}: {{ item.count_all }} <a href="{% url 'order_update' order_id=item.order.pk %}">update</a>
+            <li>{{ item.order.name }}: {{ item.count_all }} <a href="{% url 'order_update' order_id=item.order.pk %}">update</a> <a href="{% url 'order_delete' order_id=item.order.pk %}">delete</a>
                 <ul>
                     {% for a, b in item.count.items %}
-                        <li><strong>{{ a }})</strong> <a href="{% url 'get_csv' order_id=item.order.pk status=a %}">{{ b }}</a> - <a href="{% url 'get_csv_file' order_id=item.order.pk status=a %}">get csv</a> - <a href="{% url 'get_xls_file' order_id=item.order.pk status=a %}" target="_blank">get xls</a></li>
+                        <li><strong>{{ a }})</strong> <a href="{% url 'order_table' order_id=item.order.pk status=a %}">{{ b }}</a> - <a href="{% url 'get_csv_file' order_id=item.order.pk status=a %}">get csv</a> - <a href="{% url 'get_xls_file' order_id=item.order.pk status=a %}" target="_blank">get xls</a></li>
                     {% endfor %}
                 </ul>
             </li>
@@ -18,5 +18,6 @@
         <strong>1)</strong> название, автор, переплет<br>
         <strong>2)</strong> название, автор<br>
         <strong>3)</strong> название<br>
+        <strong>4)</strong> ISBN<br>
     </div>
 {% endblock %}

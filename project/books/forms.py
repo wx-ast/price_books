@@ -13,4 +13,6 @@ class PriceForm(Form):
 
 
 class OrderForm(Form):
+    loader = ChoiceField(label='Обработчик', choices=(
+        ('df', 'default'), ('nf', 'Нет в наличии')))
     file = FileField(label='*.xls, *.xlsx')
