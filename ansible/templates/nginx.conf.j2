@@ -7,6 +7,8 @@ server {
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
     ssl_ciphers 'HIGH:!aNULL:!MD5:!kEDH';
 
+    client_max_body_size 100m;
+
     location / {
         uwsgi_pass 127.0.0.1:9001;
         include uwsgi_params;

@@ -22,6 +22,12 @@
 
     - import_tasks: tasks/keys.yml
 
+    - name: adding existing user 'www-data' to group '{{ username }}'
+      user:
+        name=www-data
+        groups={{ username }}
+        append=yes
+
     - name: write project nginx file
       template:
         src: templates/nginx.conf.j2
@@ -30,12 +36,6 @@
     - name: Check NGINX configs
       shell: "/usr/sbin/nginx -t"
       register: nginx_config_status
-
-    - name: adding existing user 'www-data' to group '{{ username }}'
-      user:
-        name=www-data
-        groups={{ username }}
-        append=yes
 
     - name: Service NGINX restart and enable on boot
       systemd:
@@ -57,6 +57,14 @@
 
     - name: change owner
       file: dest=/home/{{ username }}/{{ project_name }} owner={{ username }} group={{ username }} mode=u=rwX,g=rX,o= recurse=yes
+
+    - name: Create a db directory if it does not exist
+      file:
+        path: /home/{{ username }}/{{ project_name }}/db
+        state: directory
+        mode: '0750'
+        owner: "{{ username }}"
+        group: "{{ username }}"
 
     - name: Create a media directory if it does not exist
       file:

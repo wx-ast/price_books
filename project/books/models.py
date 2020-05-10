@@ -37,9 +37,9 @@ class Product(models.Model):
                                  blank=True)
     supplier = models.ForeignKey(Supplier, verbose_name='Поставщик',
                                  on_delete=models.CASCADE)
-    name_search = models.CharField('Название (поиск)', max_length=127,
+    name_search = models.CharField('Название (поиск)', max_length=255,
                                    null=True, blank=True)
-    author_search = models.CharField('Автор (поиск)', max_length=63,
+    author_search = models.CharField('Автор (поиск)', max_length=255,
                                      null=True, blank=True)
     binding_search = models.CharField('Переплет (поиск)', max_length=31,
                                       null=True, blank=True)
