@@ -24,3 +24,15 @@ services:
             - ./media:/media
             - ./conf:/conf
 
+        links:
+            - db
+
+    db:
+        image: mariadb
+        restart: always
+        env_file:
+            - .env
+        user: ${CURRENT_UID}
+        volumes:
+            - ./db:/var/lib/mysql
+            - ./conf/db.cnf:/etc/mysql/conf.d/db.cnf

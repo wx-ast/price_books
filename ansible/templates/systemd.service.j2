@@ -5,8 +5,8 @@ After=docker.service
 
 [Service]
 Restart=always
-ExecStart=/usr/bin/docker-compose -f /home/{{ username }}/{{ project_name }}/docker-compose.yml up
-ExecStop=/usr/bin/docker-compose -f /home/{{ username }}/{{ project_name }}/docker-compose.yml down
+ExecStart=/home/{{ username }}/{{ project_name }}/start.sh
+ExecStop=/home/{{ username }}/{{ project_name }}/stop.sh
 User={{ username }}
 Group={{ username }}
 

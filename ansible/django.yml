@@ -1,6 +1,9 @@
 ---
 - hosts: all
   user: root
+  vars_files:
+    - variables.yml
+
 
   tasks:
     - import_tasks: tasks/user.yml
@@ -17,9 +20,6 @@
         state: directory
         mode: '0750'
 
-    - name: change owner
-      file: dest=/home/{{ username }}/{{ project_name }} owner={{ username }} group={{ username }} mode=u=rwX,g=rX,o= recurse=yes
-
     - import_tasks: tasks/keys.yml
 
     - name: write project nginx file
@@ -31,6 +31,12 @@
       shell: "/usr/sbin/nginx -t"
       register: nginx_config_status
 
+    - name: adding existing user 'www-data' to group '{{ username }}'
+      user:
+        name=www-data
+        groups={{ username }}
+        append=yes
+
     - name: Service NGINX restart and enable on boot
       systemd:
         name: nginx
@@ -39,14 +45,86 @@
         daemon_reload: yes
       when: nginx_config_status.rc == 0
 
-    # - name: write {{ project_name }} systemd.service file
-    #   template:
-    #     src: templates/systemd.service.j2
-    #     dest: /etc/systemd/system/{{ project_name }}.service
+    - name: clone project
+      git:
+        repo: https://github.com/wx-ast/price_books.git
+        dest: /home/{{ username }}/{{ project_name }}
 
-    # - name: Service {{ project_name }} restart and enable on boot
-    #   systemd:
-    #     name: {{ project_name }}
-    #     state: restarted
-    #     enabled: yes
-    #     daemon_reload: yes
+    - name: write {{ project_name }} systemd.service file
+      template:
+        src: templates/env.j2
+        dest: /home/{{ username }}/{{ project_name }}/.env
+
+    - name: change owner
+      file: dest=/home/{{ username }}/{{ project_name }} owner={{ username }} group={{ username }} mode=u=rwX,g=rX,o= recurse=yes
+
+    - name: Create a media directory if it does not exist
+      file:
+        path: /home/{{ username }}/{{ project_name }}/media
+        state: directory
+        mode: '0750'
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: write start.sh
+      template:
+        src: templates/start.sh.j2
+        dest: /home/{{ username }}/{{ project_name }}/start.sh
+        mode: '0750'
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: write stop.sh
+      template:
+        src: templates/stop.sh.j2
+        dest: /home/{{ username }}/{{ project_name }}/stop.sh
+        mode: '0750'
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: write dc.sh
+      template:
+        src: templates/dc.sh.j2
+        dest: /home/{{ username }}/{{ project_name }}/dc.sh
+        mode: '0750'
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: write {{ project_name }} systemd.service file
+      template:
+        src: templates/systemd.service.j2
+        dest: /etc/systemd/system/{{ project_name }}.service
+
+    - name: install python docker library
+      pip:
+        name: docker
+
+    - name: Log into private registry
+      docker_login:
+        registry: "{{ docker_registry }}"
+        username: "{{ registry_username }}"
+        password: "{{ registry_password }}"
+
+    - name: pull container manually
+      shell: docker pull {{ docker_registry }}/{{ project_name }}
+
+    - name: Service {{ project_name }} restart and enable on boot
+      systemd:
+        name: "{{ project_name }}"
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+    - name: collectstatic
+      command: /bin/bash dc.sh run --rm django python3 manage.py collectstatic --noinput
+      become: yes
+      become_user: "{{ username }}"
+      args:
+        chdir: /home/{{ username }}/{{ project_name }}
+
+    - name: migrate database
+      command: /bin/bash dc.sh run --rm django python3 manage.py migrate
+      become: yes
+      become_user: "{{ username }}"
+      args:
+        chdir: /home/{{ username }}/{{ project_name }}
