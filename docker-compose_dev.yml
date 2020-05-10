@@ -21,4 +21,3 @@ services:
         ports:
             - "8080:8080"
         command: python3 manage.py runserver 0.0.0.0:8080
-

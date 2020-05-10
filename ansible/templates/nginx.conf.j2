@@ -8,6 +8,7 @@ server {
     ssl_ciphers 'HIGH:!aNULL:!MD5:!kEDH';
 
     client_max_body_size 100m;
+    keepalive_timeout 600;
 
     location / {
         uwsgi_pass 127.0.0.1:9001;
