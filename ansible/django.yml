@@ -1,0 +1,52 @@
+---
+- hosts: all
+  user: root
+
+  tasks:
+    - import_tasks: tasks/user.yml
+
+    - name: adding existing user '{{ username }}' to group docker
+      user:
+        name={{ username }}
+        groups=docker
+        append=yes
+
+    - name: Create a project directory if it does not exist
+      file:
+        path: /home/{{ username }}/{{ project_name }}
+        state: directory
+        mode: '0750'
+
+    - name: change owner
+      file: dest=/home/{{ username }}/{{ project_name }} owner={{ username }} group={{ username }} mode=u=rwX,g=rX,o= recurse=yes
+
+    - import_tasks: tasks/keys.yml
+
+    - name: write project nginx file
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/sites-enabled/{{ project_domain }}
+
+    - name: Check NGINX configs
+      shell: "/usr/sbin/nginx -t"
+      register: nginx_config_status
+
+    - name: Service NGINX restart and enable on boot
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      when: nginx_config_status.rc == 0
+
+    # - name: write {{ project_name }} systemd.service file
+    #   template:
+    #     src: templates/systemd.service.j2
+    #     dest: /etc/systemd/system/{{ project_name }}.service
+
+    # - name: Service {{ project_name }} restart and enable on boot
+    #   systemd:
+    #     name: {{ project_name }}
+    #     state: restarted
+    #     enabled: yes
+    #     daemon_reload: yes

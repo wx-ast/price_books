@@ -1,0 +1,50 @@
+server {
+    listen 443 ssl http2;
+    server_name {{ project_domain }};
+
+    ssl_certificate /root/.keys/{{ keys_domain }}/fullchain.cer;
+    ssl_certificate_key /root/.keys/{{ keys_domain }}/privkey.pem;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers 'HIGH:!aNULL:!MD5:!kEDH';
+
+    location / {
+        uwsgi_pass 127.0.0.1:9001;
+        include uwsgi_params;
+    }
+
+    location /static {
+        autoindex off;
+        root /home/{{ username }}/{{ project_name }}/project/;
+        access_log off;
+        expires 10y;
+    }
+    location /media {
+        autoindex off;
+        root /home/{{ username }}/{{ project_name }}/project/;
+        access_log off;
+        expires 10y;
+    }
+    location /favicon.ico {
+        root /home/{{ username }}/{{ project_name }}/project/static/;
+        access_log off;
+        expires 10y;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+
+server {
+    listen 80;
+    server_name {{ project_domain }};
+
+    location / {
+        return 301 https://$server_name$request_uri;
+    }
+}

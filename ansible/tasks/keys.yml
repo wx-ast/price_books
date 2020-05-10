@@ -1,0 +1,23 @@
+- name: Create a keys directory if it does not exist
+  file:
+    path: /root/.keys
+    state: directory
+    mode: '0700'
+
+- name: Create a keys directory if it does not exist
+  file:
+    path: /root/.keys/{{ keys_domain }}
+    state: directory
+    mode: '0700'
+
+- name: Copy {{ keys_domain }} privkey
+  copy:
+    src: keys/{{ keys_domain }}.key
+    dest: /root/.keys/{{ keys_domain }}/privkey.pem
+    mode: '0600'
+
+- name: Copy {{ keys_domain }} fullchain
+  copy:
+    src: keys/{{ keys_domain }}_fullchain.cer
+    dest: /root/.keys/{{ keys_domain }}/fullchain.cer
+    mode: '0600'

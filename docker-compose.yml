@@ -1,0 +1,26 @@
+version: '2'
+
+services:
+    django:
+        image: registry.atyx.ru/price_books
+        hostname: "django"
+        restart: always
+
+        logging:
+            driver: json-file
+            options:
+                max-size: "10m"
+                max-file: "5"
+        ports:
+            - "9001:8080"
+
+        env_file:
+            - .env
+
+        user: ${CURRENT_UID}
+
+        volumes:
+            - ./project:/srv
+            - ./media:/media
+            - ./conf:/conf
+

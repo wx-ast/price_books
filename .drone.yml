@@ -1,15 +1,23 @@
 kind: pipeline
 name: default
+type: docker
 
 steps:
-- name: test
-  image: python:3.8.2
-  commands:
-  - pip install poetry
-  - poetry install
-  - poetry shell
-  - python3 manage.py test
+  - name: test
+    pull: if-not-exists
+    image: registry.atyx.ru/price_books
+    commands:
+      - python3 project/manage.py test project
 
-trigger:
-  branch:
-  - master
+  - name: publish
+    image: plugins/docker
+    settings:
+      registry: registry.atyx.ru
+      repo: registry.atyx.ru/price_books
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+
+image_pull_secrets:
+  - dockerconfigjson

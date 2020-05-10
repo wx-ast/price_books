@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+    nginx:
+        image: nginx:alpine
+        restart: always
+        ports:
+            - "8000:80"
+        environment:
+            - NGINX_HOST=localhost
+            - NGINX_PORT=80
+        command: /bin/sh -c "exec nginx -g 'daemon off;'"
+        links:
+            - django
+        volumes:
+            - ./project:/srv
+            - ./conf/nginx_dev.conf:/etc/nginx/conf.d/default.conf
+    django:
+        build: .
+        image: price_books
+        ports:
+            - "8080:8080"
+        command: python3 manage.py runserver 0.0.0.0:8080
+

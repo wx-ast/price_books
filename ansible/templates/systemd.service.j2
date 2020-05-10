@@ -1,0 +1,14 @@
+[Unit]
+Description=Docker {{ project_name }}
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker-compose -f /home/{{ username }}/{{ project_name }}/docker-compose.yml up
+ExecStop=/usr/bin/docker-compose -f /home/{{ username }}/{{ project_name }}/docker-compose.yml down
+User={{ username }}
+Group={{ username }}
+
+[Install]
+WantedBy=default.target

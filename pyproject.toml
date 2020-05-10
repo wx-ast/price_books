@@ -11,12 +11,12 @@ openpyxl = "^3.0.3"
 mysqlclient = "^1.4.6"
 xlrd = "^1.2.0"
 xlwt = "^1.3.0"
+django-server-timing = "^0.0.3"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7.9"
 pylint = "^2.5.0"
 pylint-django = "^2.0.15"
-django-server-timing = "^0.0.3"
 
 [build-system]
 requires = ["poetry>=0.12"]

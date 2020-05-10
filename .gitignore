@@ -8,5 +8,10 @@
 __pycache__/
 local_settings.py
 media
+project/static
 db.sqlite3
 .vscode
+.env
+ansible/keys/*
+ansible/hosts
+ansible/update_keys.sh

@@ -1,0 +1,37 @@
+- name: Ensure group "{{username}}" exists
+  group:
+    name: "{{username}}"
+    state: present
+
+- name: Add the user "{{username}}"
+  user:
+    name: "{{username}}"
+    home: /home/{{username}}
+    shell: /bin/bash
+    group: "{{username}}"
+
+- name: create ssh directory
+  file:
+    path: /home/{{username}}/.ssh
+    state: directory
+    owner: "{{username}}"
+    group: "{{username}}"
+    mode: 0700
+
+- name: copy ssh authorized_keys
+  shell: cp -f .ssh/authorized_keys /home/{{username}}/.ssh
+
+- name: change authorized_keys permissions
+  file:
+    path: /home/{{username}}/.ssh/authorized_keys
+    owner: "{{username}}"
+    group: "{{username}}"
+    mode: 0600
+
+- name: change {{username}} .ssh permissions
+  file:
+    path: /home/{{username}}/.ssh
+    state: directory
+    owner: "{{username}}"
+    group: "{{username}}"
+    mode: 0700

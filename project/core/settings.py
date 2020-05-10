@@ -15,7 +15,11 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-ALLOWED_HOSTS = []
+DEBUG = os.environ.get('DEBUG', False)
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'replace_it')
+
+ALLOWED_HOSTS = [a.strip() for a in os.environ.get('ALLOWED_HOSTS', 'replace_it').split(',')]
 
 
 # Application definition
@@ -114,7 +118,7 @@ USE_L10N = True
 USE_TZ = True
 
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'media')
 MEDIA_URL = '/media/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
@@ -131,10 +135,10 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 
 # local_settings
-try:
-    from .local_settings import *
-except Exception as e:
-    import warnings
-    import sys
-    warnings.warn("Unable import local settings [%s]: %s" % (type(e),  e))
-    sys.exit(1)
+# try:
+#     from .local_settings import *
+# except Exception as e:
+#     import warnings
+#     import sys
+#     warnings.warn("Unable import local settings [%s]: %s" % (type(e),  e))
+#     sys.exit(1)
