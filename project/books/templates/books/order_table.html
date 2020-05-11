@@ -9,12 +9,15 @@
             <th>binding</th>
             <th>publisher</th>
             <th>quantity</th>
-            <th>p_article</th>
-            <th>p_author</th>
-            <th>p_publisher</th>
-            <th>p_binding</th>
-            <th>p_price</th>
-            <th>p_supplier</th>
+            <th>article</th>
+            {% if status %}
+                <th>p_article</th>
+                <th>p_author</th>
+                <th>p_publisher</th>
+                <th>p_binding</th>
+                <th>p_price</th>
+                <th>p_supplier</th>
+            {% endif %}
         </tr>
         {% for item in items %}
             <tr>
@@ -24,13 +27,16 @@
                 <td>{{ item.binding }}</td>
                 <td>{{ item.publisher }}</td>
                 <td>{{ item.quantity }}</td>
+                <td>{% if item.article %}{{ item.article }}{% endif %}</td>
 
-                <td>{{ item.product.article }}</td>
-                <td>{{ item.product.author }}</td>
-                <td>{{ item.product.publisher }}</td>
-                <td>{{ item.product.binding }}</td>
-                <td>{{ item.product.price }}</td>
-                <td>{{ item.product.supplier.name }}</td>
+                {% if status %}
+                    <td>{{ item.product.article }}</td>
+                    <td>{{ item.product.author }}</td>
+                    <td>{{ item.product.publisher }}</td>
+                    <td>{{ item.product.binding }}</td>
+                    <td>{{ item.product.price }}</td>
+                    <td>{{ item.product.supplier.name }}</td>
+                {% endif %}
             </tr>
         {% endfor %}
     </table>

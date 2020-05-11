@@ -208,7 +208,8 @@ def order_table(request, order_id, status):
     items = OrderItem.objects.filter(order=order_id, status=status)
 
     context = {
-        'items': items
+        'items': items,
+        'status': status
     }
     return render(request, 'books/order_table.html', context)
 
