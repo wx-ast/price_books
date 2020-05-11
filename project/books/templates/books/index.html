@@ -19,8 +19,10 @@
             {% for item in items %}
                 <li>{{ item.order.name }}: {{ item.count_all }} <a href="{% url 'order_update' order_id=item.order.pk %}">update</a> <a href="{% url 'order_delete' order_id=item.order.pk %}">delete</a>
                     <ul>
-                        {% for a, b in item.count.items %}
-                            <li><strong>{{ a }})</strong> <a href="{% url 'order_table' order_id=item.order.pk status=a %}">{{ b }}</a> - <a href="{% url 'get_csv_file' order_id=item.order.pk status=a %}">get csv</a> - <a href="{% url 'get_xls_file' order_id=item.order.pk status=a %}" target="_blank">get xls</a></li>
+                        {% for key, count in item.count.items %}
+                            {% if count > 0 %}
+                                <li><strong>{{ key }})</strong> <a href="{% url 'order_table' order_id=item.order.pk status=key %}">{{ count }}</a> - <a href="{% url 'get_csv_file' order_id=item.order.pk status=key %}">get csv</a> - <a href="{% url 'get_xls_file' order_id=item.order.pk status=key %}" target="_blank">get xls</a></li>
+                            {% endif %}
                         {% endfor %}
                     </ul>
                 </li>
