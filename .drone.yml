@@ -21,15 +21,30 @@ steps:
         from_secret: registry_password
 
 services:
-- name: db
-  image: mariadb
-  ports:
-  - 3306
-  environment:
-    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-    MYSQL_DATABASE: django
-    MYSQL_USER: django
-    MYSQL_PASSWORD: django
+  - name: create db conf
+    image: alpine
+    volumes:
+      - name: dbconf
+        path: /dbconf
+    commands:
+      - cd /dbconf
+      - wget https://gist.githubusercontent.com/wx-ast/dc764d7c94b9d2f7b1ca0705a83f8ebf/raw/2a134d52ef850857d4961ed71dfbd9b25fad05e5/db.cnf
+      - cat /dbconf/db.cnf
+
+  - name: db
+    image: mariadb:10.3
+    volumes:
+      - name: dbconf
+        path: /etc/mysql/conf.d/
+    ports:
+      - 3306
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_DATABASE: django
+
+volumes:
+  - name: dbconf
+    temp: {}
 
 image_pull_secrets:
   - dockerconfigjson
