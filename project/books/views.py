@@ -285,6 +285,7 @@ def order_update(request, order_id):
             'binding': item.binding,
             'publisher': item.publisher,
             'quantity': item.quantity,
+            'article': item.article,
         }
         ret, ret_data = process_order_item(data, order)
         if ret:
@@ -297,7 +298,8 @@ def order_update(request, order_id):
             item.count = 0
         item.save()
 
-    return render(request, 'books/index.html')
+    return render(request, 'books/index.html', {
+        'message': 'обновление завершено'})
 
 
 @staff_member_required
