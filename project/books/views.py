@@ -189,7 +189,7 @@ def index(request):
             'count': {},
             'count_all': OrderItem.objects.filter(order=order).count()
         }
-        for i in range(4):
+        for i in range(5):
             data['count'][i] = OrderItem.objects.\
                 filter(order=order, status=i).count()
 
