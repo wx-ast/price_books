@@ -44,7 +44,7 @@ class Loader:
                 row[3]),
             'binding': row[7].strip() if isinstance(row[7], str) else str(
                 row[7]),
-            'publisher': row[7].strip()
+            'publisher': row[5].strip()
         }
 
         name_search = ''.join(re.findall("[a-z0-9а-яё]+", name.lower()))
