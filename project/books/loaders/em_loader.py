@@ -4,6 +4,7 @@ from ..models import Product
 
 
 class Loader:
+    price_multiplier = 0.74
     started = False
     supplier = None
     i = 0
@@ -29,7 +30,7 @@ class Loader:
         if row[29] not in self.bindings:
             self.bindings.append(row[29])
         data = {
-            'price': float(row[4]),
+            'price': round(float(row[4]) * self.price_multiplier, 2),
             'name': row[5].strip(),
             'author': row[6].strip(),
             'article': row[18].strip(),

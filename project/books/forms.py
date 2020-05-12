@@ -16,6 +16,7 @@ class OrderForm(Form):
     loader = ChoiceField(label='Обработчик', choices=(
         ('df', 'По умолчанию'),
         ('nf', 'Нет в наличии'),
-        ('oo', 'Нулевой')
+        ('oo', 'Нулевой'),
+        ('cb', 'Книги ЦБС')
     ))
     file = FileField(label='*.xls, *.xlsx')

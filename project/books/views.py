@@ -102,7 +102,7 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
 
         if hasattr(self.loader, 'bindings') and \
                 self.loader.bindings is not None:
-            print(self.loader.bindings)
+            print('bindings:', self.loader.bindings)
 
         # uploaded_file.close()
         os.remove(uploaded_file_path)
