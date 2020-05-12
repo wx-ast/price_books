@@ -8,6 +8,7 @@ project
 .git
 .gitignore
 LICENSE
+db
 
 # source files
 docker-compose.yml

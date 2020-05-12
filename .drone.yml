@@ -3,47 +3,47 @@ name: default
 type: docker
 
 steps:
-  - name: test
-    image: registry.atyx.ru/price_books
-    commands:
-      - sleep 15
-      - python3 project/manage.py test project
+- name: build
+  image: plugins/docker
+  settings:
+    registry: registry.atyx.ru
+    repo: registry.atyx.ru/price_books
+    username:
+      from_secret: registry_username
+    password:
+      from_secret: registry_password
 
-  - name: publish
-    image: plugins/docker
-    settings:
-      registry: registry.atyx.ru
-      repo: registry.atyx.ru/price_books
-      username:
-        from_secret: registry_username
-      password:
-        from_secret: registry_password
+- name: test
+  image: registry.atyx.ru/price_books
+  commands:
+  - sleep 15
+  - python3 project/manage.py test project
 
 services:
-  - name: create db conf
-    image: alpine
-    volumes:
-      - name: dbconf
-        path: /dbconf
-    commands:
-      - cd /dbconf
-      - wget https://gist.githubusercontent.com/wx-ast/dc764d7c94b9d2f7b1ca0705a83f8ebf/raw/2a134d52ef850857d4961ed71dfbd9b25fad05e5/db.cnf
-      - cat /dbconf/db.cnf
+- name: create db conf
+  image: alpine
+  volumes:
+  - name: dbconf
+    path: /dbconf
+  commands:
+  - cd /dbconf
+  - wget https://gist.githubusercontent.com/wx-ast/dc764d7c94b9d2f7b1ca0705a83f8ebf/raw/2a134d52ef850857d4961ed71dfbd9b25fad05e5/db.cnf
+  - cat /dbconf/db.cnf
 
-  - name: db
-    image: mariadb:10.3
-    volumes:
-      - name: dbconf
-        path: /etc/mysql/conf.d/
-    ports:
-      - 3306
-    environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-      MYSQL_DATABASE: django
+- name: db
+  image: mariadb:10.3
+  volumes:
+  - name: dbconf
+    path: /etc/mysql/conf.d/
+  ports:
+  - 3306
+  environment:
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    MYSQL_DATABASE: django
 
 volumes:
-  - name: dbconf
-    temp: {}
+- name: dbconf
+  temp: {}
 
 image_pull_secrets:
-  - dockerconfigjson
+- dockerconfigjson
