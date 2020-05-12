@@ -1,13 +1,10 @@
 import os
 import csv
-import re
-import io
 import importlib
 
-import xlrd
-from openpyxl import load_workbook
 import xlwt
 from server_timing.middleware import timed_wrapper, TimedService, timed
+from celery.result import AsyncResult
 
 from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
@@ -17,10 +14,13 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import PriceForm, OrderForm
 from .models import Product, Supplier, Order, OrderItem
-from .utils import process_order_item
+from .utils import process_order_item, json_response
+from core.celery import app
+from .tasks import load_price, load_order
 
 
 class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
@@ -28,6 +28,7 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
     form_cls = PriceForm
     started = False
     loader = None
+    i = 0
 
     def __init__(self, *args, **kwargs):
         super(FileUploadBaseView, self).__init__(*args, **kwargs)
@@ -73,42 +74,12 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
         filename = fs_storage.save(postfile.name, postfile)
         uploaded_file_path = fs_storage.path(filename)
 
-        if file_extension == '.xls':
-            workbook = xlrd.open_workbook(
-                uploaded_file_path,
-                formatting_info=False
-            )
-            sheet = workbook.sheet_by_index(0)
-            for rownum in range(sheet.nrows):
-                row = sheet.row_values(rownum)
-                if not self.process_line(row):
-                    break
-        elif file_extension == '.xlsx':
-            workbook = load_workbook(
-                filename=uploaded_file_path,
-                read_only=True
-            )
-            worksheet = workbook.active
-            for row in worksheet.rows:
-                row = [cell.value for cell in row]
-                if not self.process_line(row):
-                    break
-
-        # uploaded_file = open(uploaded_file_path, encoding='cp1251')
-        # csvfile = csv.reader(uploaded_file, delimiter=';', quotechar='"')
-        # for row in csvfile:
-        #     if not self.process_line(row):
-        #         break
-
-        if hasattr(self.loader, 'bindings') and \
-                self.loader.bindings is not None:
-            print('bindings:', self.loader.bindings)
-
-        # uploaded_file.close()
-        os.remove(uploaded_file_path)
+        ret = self.create_async_task(file_extension, uploaded_file_path)
 
         data = {
-            'message': 'Загрузка завершена'
+            'message': 'загрузка запущена',
+            'task_id': ret.id,
+            'task_type': self.task_type
         }
         post_service.end()
         with timed('render'):
@@ -124,55 +95,38 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
         print(data)
         return True
 
-    def process_line(self, row):
-        print(row)
-        return True
-
 
 class PriceLoadView(FileUploadBaseView):
+    task_type = 'supplier'
 
     def process_post_data(self, data):
         supplier = Supplier.objects.get(
             pk=data.get('supplier'))
         Product.objects.filter(supplier=supplier).delete()
 
-        try:
-            loader_module = importlib.import_module(
-                f'.loaders.{supplier.loader_type}_loader',
-                package=__package__
-            )
-            self.loader = loader_module.Loader(supplier)
-        except ModuleNotFoundError as e:
-            print(e)
-            return False
+        self.supplier_id = supplier.pk
         return True
 
-    def process_line(self, row):
-        return self.loader.process_line(row)
+    def create_async_task(self, file_extension, uploaded_file_path):
+        return load_price.apply_async((
+            file_extension, uploaded_file_path, self.supplier_id))
 
 
 class OrderLoadView(FileUploadBaseView):
     form_cls = OrderForm
-    i = 0
+    task_type = 'order'
 
     def process_post_data(self, data):
         order = Order(name=data['file'].name)
         order.save()
-        order_loader = data.get('loader', 'df')
 
-        try:
-            loader_module = importlib.import_module(
-                f'.loaders.{order_loader}_order_loader',
-                package=__package__
-            )
-            self.loader = loader_module.OrderLoader(order)
-        except ModuleNotFoundError as e:
-            print(e)
-            return False
+        self.order_id = order.pk
+        self.order_loader = data.get('loader', 'df')
         return True
 
-    def process_line(self, row):
-        return self.loader.process_line(row)
+    def create_async_task(self, file_extension, uploaded_file_path):
+        return load_order.apply_async((
+            file_extension, uploaded_file_path, self.order_loader, self.order_id))
 
 
 @staff_member_required
@@ -308,3 +262,28 @@ def order_delete(request, order_id):
     Order.objects.get(pk=order_id).delete()
 
     return redirect(reverse('index'))
+
+
+def async_task_status(request):
+    task_ids = request.POST.get('task_ids')
+    task_type = request.POST.get('task_type')
+    response_data = {'status': {}, 'file': {}}
+    if task_ids:
+        task_ids = task_ids.split(';')
+        for task_id in task_ids:
+            result = AsyncResult(id=task_id, app=app)
+            response_data['status'][task_id] = {'status': result.status}
+            print('@'*79)
+            print(task_type, task_id)
+            try:
+                if task_type == 'supplier':
+                    obj = Supplier.objects.get(task_id=task_id)
+                else:
+                    obj = Order.objects.get(task_id=task_id)
+                response_data['status'][task_id]['text'] = obj.task_status
+            except ObjectDoesNotExist:
+                response_data['status'][task_id]['text'] = 'Ошибка 2'
+    else:
+        response_data['error'] = True
+        print('EMPTY task ids list')
+    return json_response(response_data)

@@ -18,6 +18,11 @@ class Supplier(models.Model):
     loader_type = models.CharField('Загрузчик', max_length=2,
                                    choices=LOADER_TYPES)
 
+    task_id = models.CharField('Celery task id', max_length=36,
+                               null=True, blank=True)
+    task_status = models.CharField('Celery task status', max_length=255,
+                                   null=True, blank=True)
+
     class Meta:
         verbose_name = 'Поставщик'
         verbose_name_plural = 'Поставщики'
@@ -57,6 +62,11 @@ class Product(models.Model):
 class Order(models.Model):
     name = models.CharField('Название', max_length=127)
     date_create = models.DateTimeField('Дата создания', auto_now_add=True)
+
+    task_id = models.CharField('Celery task id', max_length=36,
+                               null=True, blank=True)
+    task_status = models.CharField('Celery task status', max_length=255,
+                                   null=True, blank=True)
 
     class Meta:
         verbose_name = 'Заказ'

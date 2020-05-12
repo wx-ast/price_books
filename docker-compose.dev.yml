@@ -25,3 +25,7 @@ services:
     db:
         image: alpine
         restart: "no"
+
+    celery:
+        build: .
+        image: celery

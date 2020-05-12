@@ -7,7 +7,7 @@ class Loader:
     price_multiplier = 0.82
     started = False
     supplier = None
-    i = 0
+    # i = 0
     bindings = []
     publisher = ''
 

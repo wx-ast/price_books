@@ -36,3 +36,32 @@ services:
         volumes:
             - ./db:/var/lib/mysql
             - ./conf/db.cnf:/etc/mysql/conf.d/db.cnf
+
+    redis:
+        image: redis:alpine
+        restart: always
+        volumes:
+            - ./redis:/data
+
+    celery:
+        image: registry.atyx.ru/price_books
+        hostname: "celery"
+        restart: always
+
+        logging:
+            driver: json-file
+            options:
+                max-size: "10m"
+                max-file: "5"
+
+        env_file:
+            - .env
+        user: ${CURRENT_UID}
+        volumes:
+            - ./project:/srv
+            - ./media:/media
+        command: celery worker --app core --loglevel info --concurrency 1
+
+        links:
+            - redis
+            - db

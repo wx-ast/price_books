@@ -1,4 +1,7 @@
 import re
+import json
+
+from django.http import HttpResponse
 
 from .models import Product
 
@@ -73,3 +76,9 @@ def process_order_item(data, order):
             }
 
     return False, None
+
+
+def json_response(data):
+    mimetype = 'application/javascript'
+    data = json.dumps(data)
+    return HttpResponse(data, mimetype)

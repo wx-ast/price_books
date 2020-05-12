@@ -5,8 +5,13 @@ html {
 .error {
     color: red;
 }
-
-.message {
+.js_async_task_pending {
+    color: blue;
+}
+.js_async_task_failure {
+    color: red;
+}
+.js_async_task_success {
     color: green;
 }
 

@@ -1,5 +1,6 @@
 conf
 media
+redis
 .vscode
 project
 .drone.yml

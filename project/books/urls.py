@@ -2,7 +2,7 @@ from django.urls import path, include
 from django.contrib.admin.views.decorators import staff_member_required
 
 from .views import PriceLoadView, OrderLoadView, index, order_table,\
-     get_csv_file, get_xls_file, order_update, order_delete
+     get_csv_file, get_xls_file, order_update, order_delete, async_task_status
 
 
 urlpatterns = [
@@ -19,5 +19,6 @@ urlpatterns = [
     path('get_csv_file/<int:order_id>/<int:status>/', get_csv_file,
          name='get_csv_file'),
     path('get_xls_file/<int:order_id>/<int:status>/', get_xls_file,
-         name='get_xls_file')
+         name='get_xls_file'),
+    path('async_task_status/', async_task_status, name='async_task_status')
 ]
