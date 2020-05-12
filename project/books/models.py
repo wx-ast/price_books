@@ -28,7 +28,7 @@ class Supplier(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField('Название', max_length=255)
+    name = models.CharField('Название', max_length=511)
     author = models.CharField('Автор', max_length=255, null=True, blank=True)
     binding = models.CharField('Переплет', max_length=31, null=True,
                                blank=True)
@@ -38,7 +38,7 @@ class Product(models.Model):
                                  blank=True)
     supplier = models.ForeignKey(Supplier, verbose_name='Поставщик',
                                  on_delete=models.CASCADE)
-    name_search = models.CharField('Название (поиск)', max_length=255,
+    name_search = models.CharField('Название (поиск)', max_length=511,
                                    null=True, blank=True, db_index=True)
     author_search = models.CharField('Автор (поиск)', max_length=255,
                                      null=True, blank=True, db_index=True)
@@ -70,7 +70,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, verbose_name='Заказ',
                               on_delete=models.CASCADE)
-    name = models.CharField('Название', max_length=255)
+    name = models.CharField('Название', max_length=511)
     author = models.CharField('Автор', max_length=255)
     binding = models.CharField('Переплет', max_length=31, null=True,
                                blank=True)
