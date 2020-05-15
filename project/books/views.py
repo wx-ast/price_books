@@ -102,7 +102,6 @@ class PriceLoadView(FileUploadBaseView):
     def process_post_data(self, data):
         supplier = Supplier.objects.get(
             pk=data.get('supplier'))
-        Product.objects.filter(supplier=supplier).delete()
 
         self.supplier_id = supplier.pk
         return True
@@ -273,8 +272,6 @@ def async_task_status(request):
         for task_id in task_ids:
             result = AsyncResult(id=task_id, app=app)
             response_data['status'][task_id] = {'status': result.status}
-            print('@'*79)
-            print(task_type, task_id)
             try:
                 if task_type == 'supplier':
                     obj = Supplier.objects.get(task_id=task_id)

@@ -6,7 +6,7 @@ import xlrd
 from openpyxl import load_workbook
 
 from core.celery import app
-from .models import Supplier, Order
+from .models import Supplier, Order, Product
 
 
 @app.task(bind=True)
@@ -16,7 +16,11 @@ def load_price(self, file_extension, uploaded_file_path, supplier_id):
 
     supplier = Supplier.objects.get(pk=supplier_id)
     supplier.task_id = self.request.id
-    supplier.task_status = 'Загрузка начата'
+    supplier.task_status = 'Удаление товаров поставщика'
+    supplier.save()
+    Product.objects.filter(supplier=supplier).delete()
+
+    supplier.task_status = 'Загрузка...'
     supplier.save()
     try:
         loader_module = importlib.import_module(
@@ -81,7 +85,7 @@ def load_file(file_extension, uploaded_file_path, loader, target):
             i += 1
             if time() - start > 1:
                 start = time()
-                target.task_status = f'Обработано {i} записей'
+                target.task_status = f'Обработано записей: {i}'
                 target.save()
     elif file_extension == '.xlsx':
         workbook = load_workbook(
@@ -96,7 +100,7 @@ def load_file(file_extension, uploaded_file_path, loader, target):
             i += 1
             if time() - start > 1:
                 start = time()
-                target.task_status = f'Обработано {i} записей'
+                target.task_status = f'Обработано записей: {i}'
                 target.save()
 
     if hasattr(loader, 'bindings') and \
