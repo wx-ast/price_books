@@ -7,14 +7,7 @@ RUN apk update && \
         python3 \
         uwsgi-python3 \
         mariadb-connector-c \
-        freetype \
-        lcms2 \
-        libjpeg-turbo \
-        libwebp \
         musl \
-        py3-olefile \
-        tiff \
-        zlib \
         py3-pip && \
     pip3 install --upgrade pip
 
@@ -29,8 +22,6 @@ RUN apk add --no-cache --virtual .build-deps \
         git \
         musl-dev \
         libffi-dev \
-        jpeg-dev \
-        zlib-dev \
         python3-dev && \
     pip3 install poetry && \
     poetry config virtualenvs.create false && \
