@@ -14,7 +14,9 @@
 
     {% if message %}
         <p class="message">{{ message }}</p>
-    {% else %}
+    {% endif %}
+
+    {% if items %}
         <ul>
             {% for item in items %}
                 <li>{{ item.order.name }}: {{ item.count_all }} <a href="{% url 'order_update' order_id=item.order.pk %}">update</a> <a href="{% url 'order_delete' order_id=item.order.pk %}">delete</a>
@@ -29,7 +31,7 @@
             {% endfor %}
         </ul>
 
-        <div>
+        <div class="note">
             <strong>0)</strong> совпадение не найдено<br>
             <strong>1)</strong> название, автор, переплет<br>
             <strong>2)</strong> название, автор<br>

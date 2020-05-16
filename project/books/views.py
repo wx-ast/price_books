@@ -252,8 +252,20 @@ def order_update(request, order_id):
             item.count = 0
         item.save()
 
-    return render(request, 'books/index.html', {
-        'message': 'обновление завершено'})
+    item = {
+        'order': order,
+        'count': {},
+        'count_all': OrderItem.objects.filter(order=order).count()
+    }
+    for i in range(5):
+        item['count'][i] = OrderItem.objects.\
+            filter(order=order, status=i).count()
+
+    context = {
+        'message': 'обновление завершено',
+        'items': [item]
+    }
+    return render(request, 'books/index.html', context)
 
 
 @staff_member_required
