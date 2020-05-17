@@ -1,6 +1,5 @@
 import os
 import csv
-import importlib
 
 import xlwt
 from server_timing.middleware import timed_wrapper, TimedService, timed
@@ -17,10 +16,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import PriceForm, OrderForm
-from .models import Product, Supplier, Order, OrderItem
-from .utils import process_order_item, json_response
+from .models import Supplier, Order, OrderItem
+from .utils import json_response
 from core.celery import app
-from .tasks import load_price, load_order
+from .tasks import load_price, load_order, update_order
 
 
 class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
@@ -77,7 +76,7 @@ class FileUploadBaseView(TemplateResponseMixin, ContextMixin, View):
         ret = self.create_async_task(file_extension, uploaded_file_path)
 
         data = {
-            'message': 'загрузка запущена',
+            'message': 'Загрузка запущена',
             'task_id': ret.id,
             'task_type': self.task_type
         }
@@ -230,42 +229,14 @@ def get_xls_file(request, order_id, status):
 
 @staff_member_required
 def order_update(request, order_id):
-    order = Order.objects.get(pk=order_id)
-    items = OrderItem.objects.filter(order=order)
-    for item in items:
-        data = {
-            'name': item.name,
-            'author': item.author,
-            'binding': item.binding,
-            'publisher': item.publisher,
-            'quantity': item.quantity,
-            'article': item.article if item.article else '',
-        }
-        ret, ret_data = process_order_item(data, order)
-        if ret:
-            item.product = ret_data['product']
-            item.status = ret_data['status']
-            item.count = ret_data['count']
-        else:
-            item.product = None
-            item.status = 0
-            item.count = 0
-        item.save()
-
-    item = {
-        'order': order,
-        'count': {},
-        'count_all': OrderItem.objects.filter(order=order).count()
-    }
-    for i in range(5):
-        item['count'][i] = OrderItem.objects.\
-            filter(order=order, status=i).count()
+    ret = update_order.apply_async((order_id,))
 
     context = {
-        'message': 'обновление завершено',
-        'items': [item]
+        'message': 'Обновление запущено',
+        'task_id': ret.id,
+        'task_type': 'order'
     }
-    return render(request, 'books/index.html', context)
+    return render(request, 'books/load_file.html', context)
 
 
 @staff_member_required

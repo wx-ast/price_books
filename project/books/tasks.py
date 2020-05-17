@@ -6,7 +6,8 @@ import xlrd
 from openpyxl import load_workbook
 
 from core.celery import app
-from .models import Supplier, Order, Product
+from .models import Supplier, Order, Product, OrderItem
+from .utils import process_order_item
 
 
 @app.task(bind=True)
@@ -63,6 +64,48 @@ def load_order(self, file_extension, uploaded_file_path, order_loader,
         return False
 
     i = load_file(file_extension, uploaded_file_path, loader, order)
+
+    order.task_status = f'Готово ({i})'
+    order.save()
+
+
+@app.task(bind=True)
+def update_order(self, order_id):
+    print('#'*79)
+    print('update_order')
+    i = 0
+    start = time()
+
+    order = Order.objects.get(pk=order_id)
+    order.task_id = self.request.id
+    order.task_status = 'Обновление начато'
+    order.save()
+
+    items = OrderItem.objects.filter(order=order)
+    for item in items:
+        data = {
+            'name': item.name,
+            'author': item.author,
+            'binding': item.binding,
+            'publisher': item.publisher,
+            'quantity': item.quantity,
+            'article': item.article if item.article else '',
+        }
+        ret, ret_data = process_order_item(data, order)
+        if ret:
+            item.product = ret_data['product']
+            item.status = ret_data['status']
+            item.count = ret_data['count']
+        else:
+            item.product = None
+            item.status = 0
+            item.count = 0
+        item.save()
+        i += 1
+        if time() - start > 1:
+            start = time()
+            order.task_status = f'Обработано записей: {i}'
+            order.save()
 
     order.task_status = f'Готово ({i})'
     order.save()
