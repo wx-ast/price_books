@@ -69,6 +69,17 @@ def process_order_item(data, order):
                         'count': len(products3)
                     }
 
+            if binding_search in bindings and len(binding_search) > 0:
+                products4 = products.filter(
+                    binding_search__in=bindings[binding_search]
+                )
+                if len(products4) > 0:
+                    return True, {
+                        'status': 3,
+                        'product': products4[0],
+                        'count': len(products4)
+                    }
+
             return True, {
                 'status': 3,
                 'product': products[0],
