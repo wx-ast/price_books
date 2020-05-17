@@ -140,10 +140,7 @@ CELERY_RESULT_BACKEND = 'redis://redis:6379/1'
 
 
 # local_settings
-# try:
-#     from .local_settings import *
-# except Exception as e:
-#     import warnings
-#     import sys
-#     warnings.warn("Unable import local settings [%s]: %s" % (type(e),  e))
-#     sys.exit(1)
+try:
+    from .local_settings import *
+except Exception as e:
+    pass

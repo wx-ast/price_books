@@ -21,6 +21,8 @@ services:
         ports:
             - "8080:8080"
         command: python3 manage.py runserver 0.0.0.0:8080
+        environment:
+            - POETRY_INSTALL_OPTIONS=""
 
     db:
         image: alpine
@@ -29,3 +31,4 @@ services:
     celery:
         build: .
         image: celery
+        command: watchmedo auto-restart --directory=./ --pattern=*.py --recursive -- celery worker --app core --loglevel info --concurrency 1

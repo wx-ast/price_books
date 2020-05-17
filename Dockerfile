@@ -16,6 +16,8 @@ WORKDIR /srv
 COPY poetry.lock .
 COPY pyproject.toml .
 
+ARG POETRY_INSTALL_OPTIONS
+
 RUN apk add --no-cache --virtual .build-deps \
         mariadb-dev \
         gcc \
@@ -25,7 +27,7 @@ RUN apk add --no-cache --virtual .build-deps \
         python3-dev && \
     pip3 install poetry && \
     poetry config virtualenvs.create false && \
-    poetry install --no-dev && \
+    poetry install $POETRY_INSTALL_OPTIONS && \
     apk del .build-deps
 
 ENV PYTHONPATH="/srv:/usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/lib/python3.8/site-packages"

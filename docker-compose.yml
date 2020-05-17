@@ -16,6 +16,8 @@ services:
 
         env_file:
             - .env
+        environment:
+            - POETRY_INSTALL_OPTIONS="--no-dev"
 
         user: ${CURRENT_UID}
 
