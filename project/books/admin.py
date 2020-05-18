@@ -6,6 +6,7 @@ from .models import Supplier, Product, Order, OrderItem
 class SupplierAdmin(admin.ModelAdmin):
     list_display = ('name', 'loader_type')
     prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ('task_id', 'task_status')
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -27,6 +28,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [
         OrderItemInline,
     ]
+    readonly_fields = ('task_id', 'task_status')
 
 
 admin.site.register(Supplier, SupplierAdmin)

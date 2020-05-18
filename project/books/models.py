@@ -12,6 +12,7 @@ class Supplier(models.Model):
         ('zc', 'Загря center'),
         ('um', 'Умка'),
         ('is', 'ИнтерСервис'),
+        ('ar', 'Амрита'),
     )
     name = models.CharField('Название', max_length=127)
     slug = models.SlugField('Символьный код', max_length=127)
