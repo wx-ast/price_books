@@ -7,7 +7,6 @@ class Loader:  # pylint: disable=too-few-public-methods
     price_multiplier = 0.8
     started = False
     supplier = None
-    # i = 0
     bindings = []
 
     def __init__(self, supplier):
@@ -52,10 +51,5 @@ class Loader:  # pylint: disable=too-few-public-methods
             self.bindings.append(data['binding'])
         product = Product(supplier=self.supplier, **data)
         product.save()
-        # print(data)
-
-        # self.i += 1
-        # if self.i > 20:
-        #     return False
 
         return True

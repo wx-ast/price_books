@@ -7,7 +7,6 @@ class Loader:
     price_multiplier = 0.75
     started = False
     supplier = None
-    # i = 0
     bindings = []
     binding = ''
 
@@ -67,9 +66,5 @@ class Loader:
             self.bindings.append(data['binding'])
         product = Product(supplier=self.supplier, **data)
         product.save()
-
-        # self.i += 1
-        # if self.i > 20:
-        #     return False
 
         return True

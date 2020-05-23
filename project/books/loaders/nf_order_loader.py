@@ -5,7 +5,6 @@ from ..utils import process_order_item
 class OrderLoader:
     started = False
     order = None
-    # i = 0
 
     def __init__(self, order):
         self.order = order
@@ -43,12 +42,5 @@ class OrderLoader:
         else:
             item = OrderItem(order=self.order, **data)
         item.save()
-
-        # self.i += 1
-        # print(self.i, len(row), data)
-        # if 5 < len(row) > 6:
-        #     print(self.i, len(row), row)
-        # if self.i > 20:
-        #     return False
 
         return True
