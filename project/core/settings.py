@@ -135,6 +135,20 @@ LOCALE_PATHS = (
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"rich": {"datefmt": "[%X]"}},
+    "handlers": {
+        "console": {
+            "class": "rich.logging.RichHandler",
+            "formatter": "rich",
+            "level": "DEBUG",
+        }
+    },
+    "loggers": {"django": {"handlers": ["console"]}},
+}
+
 CELERY_BROKER_URL = 'redis://redis:6379/1'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/1'
 
